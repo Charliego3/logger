@@ -1,21 +1,33 @@
 package logger
 
 import (
-	"fmt"
 	"io"
 	"sync"
-	"time"
 )
 
+// Logger is a logger face, it can be using any instance
+// see SetFactory set default factory, provider instance
 type Logger interface {
+	// PLogger is a print logger interface
+	// this is print message and key values
+	PLogger
+
+	// FLogger is a formatter logger interface
+	// this can be format message and args
+	FLogger
+
+	SetTimeFormat(string)
+	SetOutput(out io.Writer)
+	SetLevel(l Level)
+}
+
+type PLogger interface {
 	Debug(msg any, keyvals ...any)
 	Info(msg any, keyvals ...any)
 	Warn(msg any, keyvals ...any)
 	Error(msg any, keyvals ...any)
 	Fatal(msg any, keyvals ...any)
 	Print(msg any, keyvals ...any)
-	SetTimeFormat(string)
-	SetOutput(out io.Writer)
 }
 
 type FLogger interface {
@@ -28,35 +40,47 @@ type FLogger interface {
 }
 
 var (
+	// defaultLogger created by Factory.Default()
 	defaultLogger Logger
-	loggerOnce    sync.Once
+
+	mux sync.RWMutex
 )
 
+// SetLogger replace default logger
 func SetLogger(logger Logger) {
+	mux.Lock()
+	defer mux.Unlock()
 	defaultLogger = logger
 }
 
+// With create logger with key value pairs
+//
+//	With("thread", "worker")
 func With(keyvals ...any) Logger {
-	return defaultFactory.With(keyvals...)
+	return factory.With(keyvals...)
 }
 
+// WithPrefix returns logger within prefix
 func WithPrefix(prefix string) Logger {
-	return defaultFactory.WithPrefix(prefix)
+	return factory.WithPrefix(prefix)
 }
 
 func Default() Logger {
-	loggerOnce.Do(func() {
-		defaultLogger = defaultFactory.Default()
-		defaultLogger.SetTimeFormat(time.DateTime)
-	})
+	mux.RLock()
+	defer mux.RUnlock()
 	return defaultLogger
+}
+
+// SetLevel change default logger output level
+func SetLevel(l Level) {
+	Default().SetLevel(l)
 }
 
 func SetOutput(writer io.Writer) {
 	Default().SetOutput(writer)
 }
 
-func SetTimeFormatter(format string) {
+func SetTimeFormat(format string) {
 	Default().SetTimeFormat(format)
 }
 
@@ -85,67 +109,25 @@ func Print(msg interface{}, keyvals ...interface{}) {
 }
 
 func Debugf(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Debugf(string, ...any)
-	}); ok {
-		l.Debugf(format, args...)
-	} else {
-		Debug(fmt.Sprintf(format, args...))
-	}
+	Default().Debugf(format, args...)
 }
 
 func Infof(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Infof(string, ...any)
-	}); ok {
-		l.Infof(format, args...)
-	} else {
-		Info(fmt.Sprintf(format, args...))
-	}
+	Default().Infof(format, args...)
 }
 
 func Warnf(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Warnf(string, ...any)
-	}); ok {
-		l.Warnf(format, args...)
-	} else {
-		Warn(fmt.Sprintf(format, args...))
-	}
+	Default().Warnf(format, args...)
 }
 
 func Errorf(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Errorf(string, ...any)
-	}); ok {
-		l.Errorf(format, args...)
-	} else {
-		Error(fmt.Sprintf(format, args...))
-	}
+	Default().Errorf(format, args...)
 }
 
 func Fatalf(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Fatalf(string, ...any)
-	}); ok {
-		l.Fatalf(format, args...)
-	} else {
-		Fatal(fmt.Sprintf(format, args...))
-	}
+	Default().Fatalf(format, args...)
 }
 
 func Printf(format string, args ...interface{}) {
-	logger := Default()
-	if l, ok := logger.(interface {
-		Printf(string, ...any)
-	}); ok {
-		l.Printf(format, args...)
-	} else {
-		Print(fmt.Sprintf(format, args...))
-	}
+	Default().Printf(format, args...)
 }

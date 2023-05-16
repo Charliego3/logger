@@ -1,6 +1,6 @@
 package logger
 
-import "github.com/charmbracelet/log"
+import "sync"
 
 type Factory interface {
 	Default() Logger
@@ -8,22 +8,18 @@ type Factory interface {
 	WithPrefix(prefix string) Logger
 }
 
-var defaultFactory Factory = &factory{}
+var (
+	// factory create Logger instance
+	// default using github.com/charmbracelet/log
+	factory Factory
 
-type factory struct{}
+	// fmux lock
+	fmux sync.Mutex
+)
 
-func SetFactory(factory Factory) {
-	defaultFactory = factory
-}
-
-func (f *factory) With(keyvals ...any) Logger {
-	return log.With(keyvals...)
-}
-
-func (f *factory) WithPrefix(prefix string) Logger {
-	return log.WithPrefix(prefix)
-}
-
-func (f *factory) Default() Logger {
-	return log.Default()
+func SetFactory(f Factory) {
+	fmux.Lock()
+	defer fmux.Unlock()
+	factory = f
+	SetLogger(factory.Default())
 }
