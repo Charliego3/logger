@@ -12,6 +12,11 @@ func (l *DefaultLog) SetLevel(level Level) {
 	l.Logger.SetLevel(log.ParseLevel(level.String()))
 }
 
+func (l *DefaultLog) GetLevel() Level {
+	level, _ := LevelString(l.Logger.GetLevel().String())
+	return level
+}
+
 type defaultFactory struct{}
 
 func (f *defaultFactory) With(keyvals ...any) Logger {

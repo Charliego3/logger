@@ -16,6 +16,7 @@ type Logger interface {
 	// this can be format message and args
 	FLogger
 
+	GetLevel() Level
 	SetTimeFormat(string)
 	SetOutput(out io.Writer)
 	SetLevel(l Level)
@@ -69,6 +70,10 @@ func Default() Logger {
 	mux.RLock()
 	defer mux.RUnlock()
 	return defaultLogger
+}
+
+func GetLevel() Level {
+	return Default().GetLevel()
 }
 
 // SetLevel change default logger output level

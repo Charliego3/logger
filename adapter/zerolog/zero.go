@@ -74,6 +74,11 @@ func (l *ZeroLog) SetLevel(level logger.Level) {
 	l.Logger.Level(parseLevel)
 }
 
+func (l *ZeroLog) GetLevel() logger.Level {
+	level, _ := logger.LevelString(l.Logger.GetLevel().String())
+	return level
+}
+
 func (l *ZeroLog) log(e *zerolog.Event, format bool, msg any, args ...any) {
 	if format {
 		e.Msg(fmt.Sprintf(msg.(string), args...))
