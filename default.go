@@ -4,26 +4,26 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-type charmbraceletLog struct {
+type DefaultLog struct {
 	*log.Logger
 }
 
-func (l *charmbraceletLog) SetLevel(level Level) {
+func (l *DefaultLog) SetLevel(level Level) {
 	l.Logger.SetLevel(log.ParseLevel(level.String()))
 }
 
 type defaultFactory struct{}
 
 func (f *defaultFactory) With(keyvals ...any) Logger {
-	return &charmbraceletLog{log.With(keyvals...)}
+	return &DefaultLog{log.With(keyvals...)}
 }
 
 func (f *defaultFactory) WithPrefix(prefix string) Logger {
-	return &charmbraceletLog{log.WithPrefix(prefix)}
+	return &DefaultLog{log.WithPrefix(prefix)}
 }
 
 func (f *defaultFactory) Default() Logger {
-	return &charmbraceletLog{log.Default()}
+	return &DefaultLog{log.Default()}
 }
 
 func init() {

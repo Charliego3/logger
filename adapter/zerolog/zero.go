@@ -9,63 +9,63 @@ import (
 	"os"
 )
 
-type zLog struct {
+type ZeroLog struct {
 	*zerolog.Logger
 }
 
-func (l *zLog) Debug(msg any, keyvals ...any) {
+func (l *ZeroLog) Debug(msg any, keyvals ...any) {
 	l.log(l.Logger.Debug(), false, msg, keyvals...)
 }
 
-func (l *zLog) Info(msg any, keyvals ...any) {
+func (l *ZeroLog) Info(msg any, keyvals ...any) {
 	l.log(l.Logger.Info(), false, msg, keyvals...)
 }
 
-func (l *zLog) Warn(msg any, keyvals ...any) {
+func (l *ZeroLog) Warn(msg any, keyvals ...any) {
 	l.log(l.Logger.Warn(), false, msg, keyvals...)
 }
 
-func (l *zLog) Error(msg any, keyvals ...any) {
+func (l *ZeroLog) Error(msg any, keyvals ...any) {
 	l.log(l.Logger.Error(), false, msg, keyvals...)
 }
 
-func (l *zLog) Fatal(msg any, keyvals ...any) {
+func (l *ZeroLog) Fatal(msg any, keyvals ...any) {
 	l.log(l.Logger.Fatal(), false, msg, keyvals...)
 }
 
-func (l *zLog) Print(msg any, keyvals ...any) {
+func (l *ZeroLog) Print(msg any, keyvals ...any) {
 	l.log(l.Logger.Log(), false, msg, keyvals...)
 }
 
-func (l *zLog) Debugf(format string, args ...any) {
+func (l *ZeroLog) Debugf(format string, args ...any) {
 	l.log(l.Logger.Debug(), true, format, args...)
 }
 
-func (l *zLog) Infof(format string, args ...any) {
+func (l *ZeroLog) Infof(format string, args ...any) {
 	l.log(l.Logger.Info(), true, format, args...)
 }
 
-func (l *zLog) Warnf(format string, args ...any) {
+func (l *ZeroLog) Warnf(format string, args ...any) {
 	l.log(l.Logger.Warn(), true, format, args...)
 }
 
-func (l *zLog) Errorf(format string, args ...any) {
+func (l *ZeroLog) Errorf(format string, args ...any) {
 	l.log(l.Logger.Error(), true, format, args...)
 }
 
-func (l *zLog) Fatalf(format string, args ...any) {
+func (l *ZeroLog) Fatalf(format string, args ...any) {
 	l.log(l.Logger.Fatal(), true, format, args...)
 }
 
-func (l *zLog) SetTimeFormat(format string) {
+func (l *ZeroLog) SetTimeFormat(format string) {
 	zerolog.TimeFieldFormat = format
 }
 
-func (l *zLog) SetOutput(out io.Writer) {
+func (l *ZeroLog) SetOutput(out io.Writer) {
 	*l.Logger = l.Logger.Output(out)
 }
 
-func (l *zLog) SetLevel(level logger.Level) {
+func (l *ZeroLog) SetLevel(level logger.Level) {
 	parseLevel, err := zerolog.ParseLevel(level.String())
 	if err != nil {
 		l.Logger.Warn().Err(err).Str("level", level.String()).Msg("failed set logger level")
@@ -74,7 +74,7 @@ func (l *zLog) SetLevel(level logger.Level) {
 	l.Logger.Level(parseLevel)
 }
 
-func (l *zLog) log(e *zerolog.Event, format bool, msg any, args ...any) {
+func (l *ZeroLog) log(e *zerolog.Event, format bool, msg any, args ...any) {
 	if format {
 		e.Msg(fmt.Sprintf(msg.(string), args...))
 		return
@@ -87,9 +87,13 @@ func (l *zLog) log(e *zerolog.Event, format bool, msg any, args ...any) {
 }
 
 func getFields(keyvals []any) map[string]any {
-	if len(keyvals) > 0 {
+	length := len(keyvals)
+	if length > 0 {
+		if length%2 != 0 {
+			length -= 1
+		}
 		fields := make(map[string]any)
-		for i := 0; i < len(keyvals); i = i + 2 {
+		for i := 0; i < length; i = i + 2 {
 			fields[fmt.Sprintf("%v", keyvals[i])] = keyvals[i+1]
 		}
 		return fields
@@ -101,7 +105,7 @@ type zFactory struct{}
 
 func (f *zFactory) With(keyvals ...any) logger.Logger {
 	l := newContext().Fields(getFields(keyvals)).Logger()
-	return &zLog{&l}
+	return &ZeroLog{&l}
 }
 
 func (f *zFactory) WithPrefix(prefix string) logger.Logger {
@@ -110,7 +114,7 @@ func (f *zFactory) WithPrefix(prefix string) logger.Logger {
 
 func (f *zFactory) Default() logger.Logger {
 	l := newContext().Logger()
-	return &zLog{&l}
+	return &ZeroLog{&l}
 }
 
 func newContext() zerolog.Context {
