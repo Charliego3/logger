@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/charliego93/logger"
-	_ "github.com/charliego93/logger/adapter/zerolog"
+	"github.com/charliego3/logger"
+	_ "github.com/charliego3/logger/adapter/zerolog"
 	"testing"
 )
 

@@ -2,7 +2,7 @@ package zerolog
 
 import (
 	"fmt"
-	"github.com/charliego93/logger"
+	"github.com/charliego3/logger"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"io"
